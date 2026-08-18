@@ -1,0 +1,303 @@
+<Window x:Class="AdvancedUnitConverter.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AdvancedUnitConverter.UI"
+        xmlns:views="clr-namespace:AdvancedUnitConverter.UI.Views"
+        xmlns:conv="clr-namespace:AdvancedUnitConverter.UI.Converters"
+        mc:Ignorable="d"
+        Title="Advanced Unit Converter" Height="750" Width="1100" MinHeight="600" MinWidth="850"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:CategoryMatchConverter x:Key="CategoryMatch"/>
+        <conv:StringEqualsConverter x:Key="StringEquals"/>
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="C" Modifiers="Control" Command="{Binding ConverterVM.CopyResultCommand}"/>
+        <KeyBinding Key="R" Modifiers="Control" Command="{Binding ConverterVM.ResetCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding ConverterVM.ToggleFavoriteCommand}"/>
+        <KeyBinding Key="F" Modifiers="Control" Command="{Binding ToggleSearchCommand}"/>
+        <KeyBinding Key="H" Modifiers="Control" Command="{Binding NavigateCommand}" CommandParameter="History"/>
+        <KeyBinding Key="OemComma" Modifiers="Control" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+    </Window.InputBindings>
+
+    <Grid Background="{DynamicResource BgBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0" Background="{DynamicResource SidebarBgBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Brand Header -->
+                <Grid Grid.Row="0" Margin="18,20,18,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="{DynamicResource AccentBrush}" CornerRadius="10" Width="36" Height="36" VerticalAlignment="Center">
+                        <Path Data="{StaticResource SwapIcon}" Fill="#FFFFFF" Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Unit Converter" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource TextBrush}"/>
+                        <TextBlock Text="Enterprise Pro" FontSize="11" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Command="{Binding ToggleThemeCommand}" Style="{StaticResource IconButton}" ToolTip="Toggle Dark/Light Theme">
+                        <Path Data="{StaticResource LightningIcon}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                    </Button>
+                </Grid>
+
+                <!-- Categories & Navigation Scrollable -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="8,0">
+                    <StackPanel>
+
+                        <!-- General Hub Section -->
+                        <TextBlock Text="GENERAL" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="12,10,0,6"/>
+
+                        <RadioButton Content="Quick Conversions" Style="{StaticResource SidebarNavButton}"
+                                     IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Quick, Mode=OneWay}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="Quick"/>
+
+                        <RadioButton Content="Favorites" Style="{StaticResource SidebarNavButton}"
+                                     IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Favorites, Mode=OneWay}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="Favorites"/>
+
+                        <RadioButton Content="History" Style="{StaticResource SidebarNavButton}"
+                                     IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=History, Mode=OneWay}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="History"/>
+
+                        <Separator Background="{DynamicResource BorderBrush}" Margin="10,12"/>
+
+                        <!-- Unit Categories -->
+                        <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="12,0,0,6"/>
+
+                        <ItemsControl ItemsSource="{Binding Categories}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <RadioButton Style="{StaticResource SidebarNavButton}"
+                                                 Command="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                 CommandParameter="{Binding Type}">
+                                        <RadioButton.IsChecked>
+                                            <MultiBinding Converter="{StaticResource CategoryMatch}" Mode="OneWay">
+                                                <Binding Path="DataContext.ActiveView" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.ConverterVM.SelectedCategory.Type" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="Type"/>
+                                            </MultiBinding>
+                                        </RadioButton.IsChecked>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </StackPanel>
+                                    </RadioButton>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer Section (Settings / About) -->
+                <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="12,10">
+                    <StackPanel>
+                        <RadioButton Content="Settings" Style="{StaticResource SidebarNavButton}"
+                                     IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Settings, Mode=OneWay}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+
+                        <RadioButton Content="About" Style="{StaticResource SidebarNavButton}"
+                                     IsChecked="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=About, Mode=OneWay}"
+                                     Command="{Binding NavigateCommand}" CommandParameter="About"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Top Action Header -->
+            <Grid Grid.Row="0" Margin="28,16,28,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Quick Global Search Bar Trigger -->
+                <Button Grid.Column="0" Command="{Binding ToggleSearchCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Width="300" Padding="12,8">
+                    <Grid Width="270">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Data="{StaticResource SearchIcon}" Fill="{DynamicResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,10,0"/>
+                        <TextBlock Grid.Column="1" Text="Search units, symbols, categories..." Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center"/>
+                        <Border Grid.Column="2" Background="{DynamicResource BgSecondaryBrush}" CornerRadius="4" Padding="6,2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <TextBlock Text="Ctrl+F" FontSize="10" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </Border>
+                    </Grid>
+                </Button>
+            </Grid>
+
+            <!-- Dynamic Views Switching -->
+            <Grid Grid.Row="1">
+
+                <!-- 1. Converter View -->
+                <views:ConverterView DataContext="{Binding ConverterVM}">
+                    <views:ConverterView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="Converter">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:ConverterView.Style>
+                </views:ConverterView>
+
+                <!-- 2. Quick Conversions View -->
+                <views:QuickConversionView DataContext="{Binding QuickVM}">
+                    <views:QuickConversionView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="Quick">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:QuickConversionView.Style>
+                </views:QuickConversionView>
+
+                <!-- 3. Favorites View -->
+                <views:FavoritesView DataContext="{Binding FavoritesVM}">
+                    <views:FavoritesView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="Favorites">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:FavoritesView.Style>
+                </views:FavoritesView>
+
+                <!-- 4. History View -->
+                <views:HistoryView DataContext="{Binding HistoryVM}">
+                    <views:HistoryView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="History">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:HistoryView.Style>
+                </views:HistoryView>
+
+                <!-- 5. Settings View -->
+                <views:SettingsView DataContext="{Binding SettingsVM}">
+                    <views:SettingsView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="Settings">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:SettingsView.Style>
+                </views:SettingsView>
+
+                <!-- 6. About View -->
+                <views:AboutView>
+                    <views:AboutView.Style>
+                        <Style TargetType="UserControl">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DataContext.ActiveView, RelativeSource={RelativeSource AncestorType=Window}}" Value="About">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:AboutView.Style>
+                </views:AboutView>
+
+                <!-- Global Search Dialog Modal / Overlay -->
+                <Grid Visibility="{Binding IsSearchOpen, Converter={StaticResource BoolToVis}}" Background="#88000000">
+                    <Border Style="{StaticResource ModernCard}" Width="520" Height="420" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Text="{Binding GlobalSearchQuery, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" FontSize="16"/>
+                                <Button Grid.Column="1" Command="{Binding ToggleSearchCommand}" Style="{StaticResource IconButton}" Margin="8,0,0,0">
+                                    <Path Data="{StaticResource CloseIcon}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform"/>
+                                </Button>
+                            </Grid>
+
+                            <ListBox Grid.Row="1" ItemsSource="{Binding SearchResults}" Background="Transparent" BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource InteractiveCard}" Margin="0,0,0,6" Padding="12,10">
+                                            <Border.InputBindings>
+                                                <MouseBinding Gesture="LeftClick" 
+                                                              Command="{Binding DataContext.SelectSearchResultCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                              CommandParameter="{Binding}"/>
+                                            </Border.InputBindings>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextBrush}"/>
+                                                    <TextBlock Text="{Binding Category, StringFormat='Category: {0}'}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="1" Background="{DynamicResource BgSecondaryBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Symbol}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                        </Grid>
+                    </Border>
+                </Grid>
+
+            </Grid>
+
+        </Grid>
+    </Grid>
+</Window>

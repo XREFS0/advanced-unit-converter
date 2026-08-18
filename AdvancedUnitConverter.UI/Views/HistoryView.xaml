@@ -1,0 +1,133 @@
+<UserControl x:Class="AdvancedUnitConverter.UI.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:AdvancedUnitConverter.UI.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+        <conv:NullToVisibilityConverter x:Key="InvertedNullToVis" Invert="True"/>
+    </UserControl.Resources>
+
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Conversion History" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextBrush}"/>
+                <TextBlock Text="Review, copy, or reuse your past conversion records" FontSize="14" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Command="{Binding ClearAllCommand}" Style="{StaticResource DangerButton}" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource TrashIcon}" Fill="{DynamicResource DangerBrush}" Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0"/>
+                    <TextBlock Text="Clear All History"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Filters & Search Bar -->
+        <Grid Grid.Row="1" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="0,0,12,0">
+                <TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}"/>
+                <TextBlock Text="Search history records..." Foreground="{DynamicResource TextMutedBrush}" Margin="16,12,0,0" IsHitTestVisible="False"
+                           Visibility="{Binding SearchQuery, Converter={StaticResource InvertedNullToVis}}"/>
+            </Grid>
+
+            <ComboBox Grid.Column="1" ItemsSource="{Binding CategoryFilters}" SelectedItem="{Binding SelectedCategoryFilter}" Style="{StaticResource ModernComboBox}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={x:Null}}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{Binding}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                            <Setter Property="Text" Value="All Categories"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+
+        <!-- Empty State -->
+        <Border Grid.Row="2" Style="{StaticResource ModernCard}" Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="40">
+            <StackPanel HorizontalAlignment="Center">
+                <Path Data="{StaticResource HistoryIcon}" Fill="{DynamicResource TextMutedBrush}" Width="48" Height="48" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No conversion history yet" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Conversions you perform will automatically appear here" FontSize="13" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- History List -->
+        <ListBox Grid.Row="2" ItemsSource="{Binding HistoryItems}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}, ConverterParameter=Inverse}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Style="{StaticResource ModernCard}" Margin="0,0,0,8" Padding="14,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Background="{DynamicResource BgSecondaryBrush}" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <TextBlock Text="{Binding Category}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentBrush}"/>
+                            </Border>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding InputValue}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextBrush}"/>
+                                    <TextBlock Text="{Binding FromUnitSymbol, StringFormat=' {0}  →  '}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                    <TextBlock Text="{Binding FormattedResult}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                                    <TextBlock Text="{Binding ToUnitSymbol, StringFormat=' {0}'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Command="{Binding DataContext.ReuseConversionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" ToolTip="Load into Converter">
+                                    <TextBlock Text="Reuse" FontSize="12"/>
+                                </Button>
+
+                                <Button Command="{Binding DataContext.CopyResultCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" Style="{StaticResource IconButton}" ToolTip="Copy Result">
+                                    <Path Data="{StaticResource CopyIcon}" Fill="{DynamicResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform"/>
+                                </Button>
+
+                                <Button Command="{Binding DataContext.DeleteRecordCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" Style="{StaticResource IconButton}" ToolTip="Delete Record">
+                                    <Path Data="{StaticResource TrashIcon}" Fill="{DynamicResource DangerBrush}" Width="14" Height="14" Stretch="Uniform"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

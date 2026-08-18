@@ -1,0 +1,27 @@
+## Build & Output directories
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio & Rider
+.vs/
+.idea/
+*.DotSettings.user
+
+## OS Generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Database and Local Runtime Files
+*.db
+*.db-shm
+*.db-wal
+settings.json

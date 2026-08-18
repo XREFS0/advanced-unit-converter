@@ -1,0 +1,209 @@
+<UserControl x:Class="AdvancedUnitConverter.UI.Views.ConverterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:AdvancedUnitConverter.UI.Converters"
+             xmlns:enums="clr-namespace:AdvancedUnitConverter.Core.Enums;assembly=AdvancedUnitConverter.Core"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="850">
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="32" MaxWidth="800" HorizontalAlignment="Stretch">
+
+            <!-- Category Header & Favorite Action -->
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SelectedCategory.Name}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextBrush}"/>
+                    <TextBlock Text="{Binding SelectedCategory.Description}" FontSize="14" Foreground="{DynamicResource TextMutedBrush}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Actions: Precision selector & Favorite Button -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource BgSecondaryBrush}" CornerRadius="8" Padding="4,2" Margin="0,0,12,0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Precision:" VerticalAlignment="Center" Margin="8,0,6,0" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <ComboBox SelectedValue="{Binding CurrentPrecision}" Style="{StaticResource ModernComboBox}" Width="120" BorderThickness="0" Background="Transparent">
+                                <enums:PrecisionMode>Auto</enums:PrecisionMode>
+                                <enums:PrecisionMode>TwoDecimals</enums:PrecisionMode>
+                                <enums:PrecisionMode>FourDecimals</enums:PrecisionMode>
+                                <enums:PrecisionMode>SixDecimals</enums:PrecisionMode>
+                                <enums:PrecisionMode>TenDecimals</enums:PrecisionMode>
+                                <enums:PrecisionMode>Scientific</enums:PrecisionMode>
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+
+                    <Button Command="{Binding ToggleFavoriteCommand}" Style="{StaticResource SecondaryButton}" Padding="10,8" ToolTip="Add/Remove Favorite">
+                        <Path Width="16" Height="16" Stretch="Uniform" Data="{StaticResource StarIcon}">
+                            <Path.Style>
+                                <Style TargetType="Path">
+                                    <Setter Property="Fill" Value="{DynamicResource TextMutedBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                            <Setter Property="Fill" Value="#FBBF24"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Main Conversion Card -->
+            <Border Style="{StaticResource ModernCard}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- From Input Section -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="220"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,16,0">
+                            <TextBlock Text="From Value" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding InputValue, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" FontSize="22" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Unit" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8"/>
+                            <ComboBox ItemsSource="{Binding AvailableUnits}" SelectedItem="{Binding FromUnit}" Style="{StaticResource ModernComboBox}" Height="46">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Symbol, StringFormat=' ({0})'}" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Swap and Controls Row -->
+                    <Grid Grid.Row="1" Margin="0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Separator VerticalAlignment="Center" Background="{DynamicResource BorderBrush}"/>
+
+                        <Button Grid.Column="1" Command="{Binding SwapUnitsCommand}" Style="{StaticResource SecondaryButton}" Margin="16,0" Padding="16,10" ToolTip="Swap Units (⇅)">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource SwapIcon}" Fill="{DynamicResource AccentBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
+                                <TextBlock Text="Swap Units" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Separator Grid.Column="2" VerticalAlignment="Center" Background="{DynamicResource BorderBrush}"/>
+                    </Grid>
+
+                    <!-- To Output Section -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="220"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,0,16,0">
+                            <TextBlock Text="Converted Result" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8"/>
+                            <Border Background="{DynamicResource BgSecondaryBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Height="46">
+                                <Grid>
+                                    <TextBlock Text="{Binding OutputValue}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Unit" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" Margin="0,0,0,8"/>
+                            <ComboBox ItemsSource="{Binding AvailableUnits}" SelectedItem="{Binding ToUnit}" Style="{StaticResource ModernComboBox}" Height="46">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                            <TextBlock Text="{Binding Symbol, StringFormat=' ({0})'}" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+            </Border>
+
+            <!-- Conversion Formula & Notification Banner -->
+            <Border Background="{DynamicResource BgSecondaryBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Path Data="{StaticResource InfoIcon}" Fill="{DynamicResource AccentBrush}" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Conversion Formula" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Text="{Binding FormulaApplied}" FontSize="13.5" FontWeight="Medium" Foreground="{DynamicResource TextBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Action Buttons: Copy, Clear, Reset -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Command="{Binding CopyResultCommand}" Style="{StaticResource PrimaryButton}" Padding="14,8" Margin="0,0,8,0" ToolTip="Copy Result (Ctrl+C)">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource CopyIcon}" Fill="#FFFFFF" Width="14" Height="14" Stretch="Uniform" Margin="0,0,6,0"/>
+                                <TextBlock Text="Copy Result"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding ClearCommand}" Style="{StaticResource SecondaryButton}" Padding="10,8" Margin="0,0,8,0" ToolTip="Clear Value">
+                            <TextBlock Text="Clear"/>
+                        </Button>
+
+                        <Button Command="{Binding ResetCommand}" Style="{StaticResource SecondaryButton}" Padding="10,8" ToolTip="Reset Converter (Ctrl+R)">
+                            <Path Data="{StaticResource ResetIcon}" Fill="{DynamicResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Error Banner (if error) -->
+            <Border Background="#33EF4444" BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16"
+                    Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource CloseIcon}" Fill="{DynamicResource DangerBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontWeight="Medium" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Toast / Copy Notification Popup -->
+            <Border Background="{DynamicResource SuccessBrush}" CornerRadius="8" Padding="16,10" HorizontalAlignment="Center" Margin="0,10,0,0"
+                    Visibility="{Binding ShowCopyNotification, Converter={StaticResource BoolToVis}}">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource CheckIcon}" Fill="#FFFFFF" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CopyNotificationText}" Foreground="#FFFFFF" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
