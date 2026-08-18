@@ -25,3 +25,4 @@ $RECYCLE.BIN/
 *.db-shm
 *.db-wal
 settings.json
+.git_repo/
